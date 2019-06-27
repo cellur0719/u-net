@@ -22,7 +22,7 @@ Unlabelled = [0,0,0]
 COLOR_DICT = np.array([Sky, Building, Pole, Road, Pavement,
                           Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
 
-
+'''
 def adjustData(img,mask,flag_multi_class,num_class):
     if(flag_multi_class):
         img = img / 255
@@ -42,7 +42,13 @@ def adjustData(img,mask,flag_multi_class,num_class):
         mask[mask > 0.5] = 1
         mask[mask <= 0.5] = 0
     return (img,mask)
+'''
 
+def adjustData(x, y):
+    x = x/255
+    y = y/255
+    return (x, y)
+    
 
 
 def trainGenerator(batch_size,train_path,x_folder,y_folder,aug_dict,x_color_mode = "rgb",
@@ -79,14 +85,14 @@ def trainGenerator(batch_size,train_path,x_folder,y_folder,aug_dict,x_color_mode
         seed = seed)
     train_generator = zip(x_generator, y_generator)
     for (x, y) in train_generator:
-        x, y = adjustData(x, y,flag_multi_class,num_class)
+        x, y = adjustData(x, y)
         yield (x, y)
 
 
 
 def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_class = False,as_gray = True):
     for i in range(num_image):
-        img = io.imread(os.path.join(test_path,"%d.png"%i),as_gray = as_gray)
+        img = io.imread(os.path.join(test_path,"%d.jpg"%i),as_gray = as_gray)
         img = img / 255
         img = trans.resize(img,target_size)
         img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
@@ -101,10 +107,10 @@ def geneTrainNpy(x_path,y_path,flag_multi_class = False,num_class = 2,x_prefix =
     for index,item in enumerate(x_name_arr):
         x = io.imread(item,as_gray = x_as_gray)
         y = io.imread(item.replace(x_path,y_path).replace(x_prefix,y_prefix),as_gray = y_as_gray)
-        x,y = adjustData(x,y,flag_multi_class,num_class)
+        x,y = adjustData(x,y)
         x_arr.append(x)
         y_arr.append(y)
-    x_arr = np.array(x)
+    x_arr = np.array(x_arr)
     y_arr = np.array(y_arr)
     return x_arr,y_arr
 
@@ -120,5 +126,5 @@ def labelVisualize(num_class,color_dict,img):
 
 def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
     for i,item in enumerate(npyfile):
-        img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,0]
-        io.imsave(os.path.join(save_path,"%d_predict.png"%i),img)
+        img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,:]
+        io.imsave(os.path.join(save_path,"%d_predict.jpg"%i),img)
