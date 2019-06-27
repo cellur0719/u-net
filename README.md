@@ -1,5 +1,5 @@
 # u-net
-**1.** Resize the images(**/data/original**) to (256, 256)  and save them as **/data/resize/** (as input images) by **resize.m**.
+**1.** Resize the images(**/data/original**) to (284, 284)  and save them as **/data/resize/** (as input images) by **resize.m**.
 
 **2.** Add motion blur to images by **imageProcess.m**. Then get the blurred image in **/data/blur/**.
 
