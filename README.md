@@ -13,5 +13,5 @@
 
 **model.py**: the U-Net Model
 
-**daya.py**: create the data class
+**data.py**: create the data class
 
