@@ -1,10 +1,13 @@
 from __future__ import print_function
 from keras.preprocessing.image import ImageDataGenerator
+from sklearn.feature_extraction.image import extract_patches_2d
 import numpy as np 
 import os
 import glob
 import skimage.io as io
+import random
 import skimage.transform as trans
+
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -53,7 +56,7 @@ def adjustData(x, y):
 
 def trainGenerator(batch_size,train_path,x_folder,y_folder,aug_dict,x_color_mode = "rgb",
                     y_color_mode = "rgb",x_save_prefix  = "blur",y_save_prefix  = "org",
-                    flag_multi_class = False,num_class = 2,save_to_dir = None,save_format='jpg',x_target_size = (284, 284), y_target_size = (100, 100),seed = 1):
+                    flag_multi_class = False,num_class = 2,save_to_dir = None,save_format='jpg',x_target_size = (572, 572), y_target_size = (572, 572),seed = 1):
     '''
     can generate image and mask at the same time
     use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
@@ -99,7 +102,7 @@ def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_cl
         img = np.reshape(img,(1,)+img.shape)
         yield img
 
-
+'''
 def geneTrainNpy(x_path,y_path,flag_multi_class = False,num_class = 2,x_prefix = "blur",y_prefix = "org",x_as_gray = False,y_as_gray = False):
     x_name_arr = glob.glob(os.path.join(x_path,"%s*.jpg"%x_prefix))
     x_arr = []
@@ -113,7 +116,32 @@ def geneTrainNpy(x_path,y_path,flag_multi_class = False,num_class = 2,x_prefix =
     x_arr = np.array(x_arr)
     y_arr = np.array(y_arr)
     return x_arr,y_arr
-
+'''
+def geneTrainNpy(x_path,y_path,x_prefix = "blur",y_prefix = "org",x_as_gray = False,y_as_gray = False):
+    x_name_arr = glob.glob(os.path.join(x_path,"%s*.jpg"%x_prefix))
+    x_arr = []
+    y_arr = []
+    for index,item in enumerate(x_name_arr):    
+        x = io.imread(item) #array
+        y = io.imread(item.replace(x_path,y_path).replace(x_prefix,y_prefix))
+        x_patches = extract_patches_2d(x, (80, 80))
+        y_patches = extract_patches_2d(y, (80, 80))
+        size = x_patches.shape[0]
+        res = [random.randint(0, size - 1) for i in range(70)]
+        x_selected = x_patches[res, :, :, :]
+        y_selected = y_patches[res, :, :, :]
+        x_selected = x_selected / 255
+        y_selected = y_selected / 255
+        if(index == 0):
+            x_arr = x_selected
+            y_arr = y_selected
+        else:
+            x_arr = np.append(x_arr, x_selected, axis = 0)
+            y_arr = np.append(y_arr, y_selected, axis = 0)
+        print(x_arr.shape)
+    x_arr = np.array(x_arr)
+    y_arr = np.array(y_arr)
+    return x_arr,y_arr
 
 def labelVisualize(num_class,color_dict,img):
     img = img[:,:,0] if len(img.shape) == 3 else img
